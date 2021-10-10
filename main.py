@@ -27,7 +27,6 @@ pygame.display.set_icon(icon)
 
 def draw_rect(player_x, player_y, rect_w, rect_h):
     pygame.draw.rect(screen, WHITE, pygame.Rect(player_x, player_y, rect_w, rect_h))
-    pygame.display.update()
 
 
 # Player ###############################################################################################################
@@ -49,7 +48,6 @@ circle_y = avatar_y - circle_r
 
 def draw_ball():
     pygame.draw.circle(screen, WHITE, (circle_x, circle_y), circle_r, 0)
-    pygame.display.update()
 
 
 # Game engine ##########################################################################################################
@@ -75,8 +73,8 @@ def main(player_x, player_y):
 
         screen.fill(BLACK)
         draw_rect(player_x, player_y, rect_x, rect_y)
-
         draw_ball()
+        pygame.display.update()
 
     pygame.quit()
 
