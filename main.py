@@ -8,8 +8,12 @@ pygame.init()
 # Configure window
 screen_x = pygame.display.Info().current_w
 screen_y = pygame.display.Info().current_h
-screen = pygame.display.set_mode((int(screen_x / 2), int(screen_y / 2)))
+screen = pygame.display.set_mode((int(screen_y / 2 * 1.618), int(screen_y / 2)))
 window_x, window_y = pygame.display.get_window_size()
+
+# Background color
+BLACK = (0, 0, 0)
+WHITE = (225, 225, 225)
 
 # Caption
 pygame.display.set_caption("Blockbreaker")
@@ -18,58 +22,52 @@ pygame.display.set_caption("Blockbreaker")
 icon = pygame.image.load("uu_logotyp.jpg")
 pygame.display.set_icon(icon)
 
-# Player ###############################################################################################################
 
-# Avatar
-player_avatar = pygame.image.load("perspective.png")
-
-# Avatar placement
-player_x = (window_x / 2) - player_avatar.get_width() / 2
-player_y = window_y - window_y / 7
-player_x_change = 0
-
-# Avatar speed
-player_speed = 3
-
-
-def player(x, y):
-    screen.blit(player_avatar, (x, y))
-
-
-# Game loop ############################################################################################################
-
-
-# System load
-fps = 60
-clock = pygame.time.Clock()
-
-loop = True
-while loop:
-
-    # Load
-    clock.tick(fps)
-
-    # Background color
-    screen.fill((0, 0, 0))
-
-    # Check events
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            loop = False
-
-        # Keystroke events
-
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_LEFT:
-                player_x_change = -player_speed
-            if event.key == pygame.K_RIGHT:
-                player_x_change = player_speed
-        if event.type == pygame.KEYUP:
-            if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
-                player_x_change = 0
-
-    player_x += player_x_change
-    player(player_x, player_y)
+def draw_window(player_x, player_y, rect_w, rect_h):
+    screen.fill(BLACK)
+    pygame.draw.rect(screen, WHITE, pygame.Rect(player_x, player_y, rect_w, rect_h))
     pygame.display.update()
 
-pygame.quit()
+
+# Player ###############################################################################################################
+
+# Avatar & position
+rect_x = 64
+rect_y = 8 * 1.618
+avatar_x = (window_x / 2) - rect_x / 2
+avatar_y = window_y - window_y / 8
+
+# Avatar speed
+avatar_speed = 10
+
+# Ball #################################################################################################################
+
+
+# Game engine ##########################################################################################################
+
+# FPS
+FPS = 60
+
+
+def main(player_x, player_y):
+    clock = pygame.time.Clock()
+    loop = True
+    while loop:
+        clock.tick(FPS)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                loop = False
+
+        user_input = pygame.key.get_pressed()
+        if user_input[pygame.K_LEFT] and player_x - avatar_speed > 0:
+            player_x -= avatar_speed
+        if user_input[pygame.K_RIGHT] and player_x + avatar_speed + rect_x < window_x:  # elif
+            player_x += avatar_speed
+
+        draw_window(player_x, player_y, rect_x, rect_y)
+
+    pygame.quit()
+
+
+if __name__ == '__main__':
+    main(avatar_x, avatar_y)
