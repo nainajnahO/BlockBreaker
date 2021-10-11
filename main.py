@@ -22,11 +22,6 @@ pygame.display.set_caption("Blockbreaker")
 icon = pygame.image.load("uu_logotyp.jpg")
 pygame.display.set_icon(icon)
 
-
-def draw_rect(player_x, player_y, rect_w, rect_h):
-    pygame.draw.rect(screen, WHITE, pygame.Rect(player_x, player_y, rect_w, rect_h))
-
-
 # Player ###############################################################################################################
 
 # Avatar & position
@@ -37,6 +32,11 @@ avatar_y = window_y - window_y / 8
 
 # Avatar speed
 avatar_speed = 8
+
+
+def draw_rect(player_x, player_y, rect_w, rect_h):
+    pygame.draw.rect(screen, WHITE, pygame.Rect(player_x, player_y, rect_w, rect_h))
+
 
 # Ball #################################################################################################################
 circle_r = 14
