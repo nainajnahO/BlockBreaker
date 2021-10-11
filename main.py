@@ -31,7 +31,7 @@ avatar_x = (window_x / 2) - rect_x / 2
 avatar_y = window_y - window_y / 8
 
 # Avatar speed
-avatar_speed = 8
+avatar_speed = 12
 
 
 def draw_rect(player_x, player_y, rect_w, rect_h):
@@ -39,7 +39,7 @@ def draw_rect(player_x, player_y, rect_w, rect_h):
 
 
 # Ball #################################################################################################################
-circle_r = 14
+circle_r = 13
 circle_x = (window_x / 2)
 circle_y = avatar_y - circle_r
 
@@ -57,6 +57,10 @@ FPS = 60
 def main(player_x, player_y, ball_x, ball_y):
     clock = pygame.time.Clock()
     loop = True
+
+    flux_x = True
+    flux_y = True
+
     while loop:
         clock.tick(FPS)
         for event in pygame.event.get():
@@ -72,17 +76,22 @@ def main(player_x, player_y, ball_x, ball_y):
 
         # Ball boarders & movement
         # x-movement
-        if ball_x > 0:
+        if ball_x - circle_r / 2 - avatar_speed > 0 and flux_x:
             ball_x -= avatar_speed
-        elif ball_x < window_x:
-            for ball_x in range(window_x):
-                ball_x += avatar_speed
+        else:
+            flux_x = False
+            ball_x += avatar_speed
+            if ball_x + circle_r / 2 + avatar_speed > window_x:
+                flux_x = True
+
         # y-movement
-        if ball_y > 0:
+        if ball_y - circle_r / 2 - avatar_speed > 0 and flux_y:
             ball_y -= avatar_speed
-        elif ball_y < window_y:
-            for ball_y in range(window_y):
-                ball_y += avatar_speed
+        else:
+            flux_y = False
+            ball_y += avatar_speed
+            if ball_y + circle_r / 2 + avatar_speed > window_y:
+                flux_y = True
 
         # Output
         screen.fill(BLACK)
