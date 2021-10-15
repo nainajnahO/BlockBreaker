@@ -1,4 +1,5 @@
 import pygame
+import random
 
 # Initialize pygame ####################################################################################################
 pygame.init()
@@ -48,13 +49,35 @@ def draw_ball(pos_x, pos_y):
     pygame.draw.circle(screen, WHITE, (pos_x, pos_y), circle_r, 0)
 
 
+# Blocks ###############################################################################################################
+
+tiles_width = window_x // 9
+tiles_height = window_x // 19
+
+
+def tiles():
+    lst = []
+    for y in range(0, window_y // 4, tiles_height):
+        for x in range(0, window_x - tiles_width, tiles_width):
+            lst.append([x, y, tiles_width, tiles_height])
+    return lst
+
+
+def draw_tiles():
+    for i in range(len(tiles())):
+        c = random.randint(50, 255)
+        pygame.draw.rect(screen, (c, c, c), pygame.Rect(tiles()[i]))
+
+
 # Game engine ##########################################################################################################
 
 # FPS
 FPS = 60
 
 
-def main(player_x, player_y, ball_x, ball_y):
+def main():
+    global avatar_x, avatar_y, circle_x, circle_y
+
     clock = pygame.time.Clock()
     loop = True
 
@@ -72,38 +95,39 @@ def main(player_x, player_y, ball_x, ball_y):
 
         # Rectangle movement
         user_input = pygame.key.get_pressed()
-        if user_input[pygame.K_LEFT] and player_x - avatar_speed > 0:
-            player_x -= avatar_speed
-        if user_input[pygame.K_RIGHT] and player_x + avatar_speed + rect_x < window_x:  # elif
-            player_x += avatar_speed
+        if user_input[pygame.K_LEFT] and avatar_x - avatar_speed > 0:
+            avatar_x -= avatar_speed
+        if user_input[pygame.K_RIGHT] and avatar_x + avatar_speed + rect_x < window_x:  # elif
+            avatar_x += avatar_speed
 
         # Ball boarders & movement
         # x-movement
-        if ball_x - circle_r / 2 - avatar_speed > 0 and flux_x:
-            ball_x -= avatar_speed
+        if circle_x - circle_r / 2 - avatar_speed > 0 and flux_x:
+            circle_x -= avatar_speed
         else:
             flux_x = False
-            ball_x += avatar_speed
-            if ball_x + circle_r / 2 + avatar_speed > window_x:
+            circle_x += avatar_speed
+            if circle_x + circle_r / 2 + avatar_speed > window_x:
                 flux_x = True
 
         # y-movement
-        if ball_y - circle_r / 2 - avatar_speed > 0 and flux_y:
-            ball_y -= avatar_speed
+        if circle_y - circle_r / 2 - avatar_speed > 0 and flux_y:
+            circle_y -= avatar_speed
         else:
             flux_y = False
-            ball_y += avatar_speed
-            if ball_y + circle_r / 2 + avatar_speed > window_y:
+            circle_y += avatar_speed
+            if circle_y + circle_r / 2 + avatar_speed > window_y:
                 flux_y = True
 
         # Output
         screen.fill(BLACK)
-        draw_rect(player_x, player_y, rect_x, rect_y)
-        draw_ball(ball_x, ball_y)
+        draw_rect(avatar_x, avatar_y, rect_x, rect_y)
+        draw_ball(circle_x, circle_y)
+        draw_tiles()
         pygame.display.update()
 
     pygame.quit()
 
 
 if __name__ == '__main__':
-    main(avatar_x, avatar_y, circle_x, circle_y)
+    main()
