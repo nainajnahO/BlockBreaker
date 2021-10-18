@@ -71,7 +71,7 @@ def collision_tiles(tile_x, tile_y, x_ball, y_ball):
 
 # Game engine ##########################################################################################################
 
-# System load
+# FPS
 FPS = 60
 
 # In-game text
@@ -84,6 +84,8 @@ def main():
 
     # Retrieve necessary global variables
     global platform_x, ball_y, ball_x
+
+    # Clock control
     clock = pygame.time.Clock()
 
     # Set game-loop
