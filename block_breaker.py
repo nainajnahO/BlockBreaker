@@ -5,8 +5,8 @@ pygame.init()
 # Variables ############################################################################################################
 
 # Window size
-window_x = int(pygame.display.Info().current_w / 2)
-window_y = int(pygame.display.Info().current_h / 2)
+window_x = int(pygame.display.Info().current_w / 1.5)
+window_y = int(pygame.display.Info().current_h / 1.5)
 window = pygame.display.set_mode([window_x, window_y])
 
 # Platform dimensions & position
@@ -93,7 +93,7 @@ def main():
     run_loop = True
 
     # Defining object speeds
-    ball_speed = (9 * window_y) / 1080
+    ball_speed = (10 * window_y) / 1080
     platform_speed = ball_speed * 1.25
 
     # Initiating tile variables
