@@ -2,6 +2,8 @@ import pygame
 
 pygame.init()
 
+# Variables ############################################################################################################
+
 # Window size
 window_x = int(pygame.display.Info().current_w / 2)
 window_y = int(pygame.display.Info().current_h / 2)
@@ -69,21 +71,25 @@ def collision_tiles(tile_x, tile_y, x_ball, y_ball):
 
 # Game engine ##########################################################################################################
 
-# FPS
+# System load
 FPS = 60
 
-# TEXT
+# In-game text
 my_font = pygame.font.SysFont('Comic Sans MS', 50)
 game_over_txt = my_font.render("GAME OVER! Press (r) for restart", True, (255, 255, 255))
 you_win_txt = my_font.render("YOU WIN!", True, (255, 255, 255))
 
 
 def main():
+
+    # Retrieve necessary global variables
     global platform_x, ball_y, ball_x
     clock = pygame.time.Clock()
-    quit_loop = True
 
-    # Object speeds
+    # Set game-loop
+    run_loop = True
+
+    # Defining object speeds
     ball_speed = 12
     platform_speed = 15
 
@@ -92,15 +98,19 @@ def main():
     tiles_pos = position_tiles(tiles)
     removed_tiles = []
 
-    # Initiating dimensions
+    # Initiating ball travel
     flux_y = True
     flux_x = True
 
-    while quit_loop:
+    while run_loop:
+
+        # System load control
         clock.tick(FPS)
+
+        # Verifying game-loop
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                quit_loop = False
+                run_loop = False
 
         # Platform movement
         user_input = pygame.key.get_pressed()
@@ -108,8 +118,6 @@ def main():
             platform_x -= platform_speed
         if user_input[pygame.K_RIGHT] and platform_x + platform_speed + platform_w < window_x:
             platform_x += platform_speed
-
-        # BALL COLLISION:
 
         # Wall bounce x-axis & y-axis
         if ball_x - ball_r < 0:
@@ -124,7 +132,7 @@ def main():
         if ball_y - ball_r < 0:
             ball_y, flux_y = ball_y + ball_speed, False
 
-        # COLLISION WITH PLATFORM
+        # Platform bounce
         if platform_x <= ball_x <= platform_x + platform_w and platform_y <= ball_y + ball_r <= platform_y + platform_h:
             ball_y, flux_y = ball_y - ball_speed, True
         else:
@@ -133,7 +141,7 @@ def main():
             else:
                 ball_y += ball_speed
 
-        # COLLISION WITH BLOCKS
+        # Tile collision
         for tile in tiles_pos:
             if collision_tiles(tile[0], tile[1], ball_x, ball_y):
                 flux_y = False
@@ -141,24 +149,23 @@ def main():
                 removed_tiles.append(tile)
                 update_tiles(tiles, removed_tiles)
 
-        # IF BALL LOST
+        # Losing
         game_over = False
         if ball_y > window_y:
             game_over = True
             ball_speed = 0
 
-        # IF ALL BLOCKS GONE
+        # Winning
         win = False
         if len(tiles) == 0:
             win = True
             ball_speed = 0
 
-        # new frame update
+        # Update window
         window.fill((0, 0, 0))
-        # screen.blit(bg, [0, 0])
         draw_tiles(tiles)
         pygame.draw.rect(window, (255, 255, 255), pygame.Rect(platform_x, platform_y, platform_w, platform_h))
-        draw_ball(ball_x, ball_y, ball_r)  # Ball
+        draw_ball(ball_x, ball_y, ball_r)
 
         if game_over:
             window.blit(game_over_txt, (window_x // 3.5, window_y // 2))
