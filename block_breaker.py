@@ -79,9 +79,10 @@ my_font = pygame.font.SysFont('Comic Sans MS', 50)
 game_over_txt = my_font.render("GAME OVER! Press (r) for restart", True, (255, 255, 255))
 you_win_txt = my_font.render("YOU WIN!", True, (255, 255, 255))
 
+print(window_x, window_y)
+
 
 def main():
-
     # Retrieve necessary global variables
     global platform_x, ball_y, ball_x
 
@@ -92,8 +93,8 @@ def main():
     run_loop = True
 
     # Defining object speeds
-    ball_speed = 12
-    platform_speed = 15
+    ball_speed = (9 * window_y) / 1080
+    platform_speed = ball_speed * 1.25
 
     # Initiating tile variables
     tiles = generate_tiles()
