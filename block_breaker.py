@@ -1,72 +1,70 @@
 import pygame
-import random
 
-# Initialize pygame ####################################################################################################
 pygame.init()
 
-# GUI ##################################################################################################################
+# Window size
+window_x = int(pygame.display.Info().current_w / 2)
+window_y = int(pygame.display.Info().current_h / 2)
+window = pygame.display.set_mode([window_x, window_y])
 
-# Configure window
-screen_x = pygame.display.Info().current_w
-screen_y = pygame.display.Info().current_h
-screen = pygame.display.set_mode((int(screen_y / 2 * 1.618), int(screen_y / 2)))
-window_x, window_y = pygame.display.get_window_size()
+# Platform dimensions & position
+platform_h = window_y / 60
+platform_w = window_x / 20
+platform_y = window_y - window_y / 10
+platform_x = (window_x / 2) - platform_w / 2
 
-# Background color
-BLACK = (0, 0, 0)
-WHITE = (225, 225, 225)
+# Tile dimensions & colours
+tiles_h = window_y // 20
+tiles_w = window_x // 10
+tiles_brightness_lower_limit = 50
 
-# Caption
-pygame.display.set_caption("Blockbreaker")
-
-# Icon
-icon = pygame.image.load("uu_logotyp.jpg")
-pygame.display.set_icon(icon)
-
-# Player ###############################################################################################################
-
-# Avatar & position
-rect_x = 64
-rect_y = 8 * 1.618
-avatar_x = (window_x / 2) - rect_x / 2
-avatar_y = window_y - window_y / 8
-
-# Avatar speed
-avatar_speed = 10
-
-
-def draw_rect(pos_x, pos_y, rect_w, rect_h):
-    pygame.draw.rect(screen, WHITE, pygame.Rect(pos_x, pos_y, rect_w, rect_h))
+# Ball dimension & position
+ball_r = window_y // 60
+ball_y = platform_y
+ball_x = window_x // 2
 
 
 # Ball #################################################################################################################
-circle_r = 13
-circle_x = (window_x / 2)
-circle_y = avatar_y - circle_r
+
+def draw_ball(x_pos, y_pos, radius):
+    pygame.draw.circle(window, (255, 255, 255), (x_pos, y_pos), radius, 0)
 
 
-def draw_ball(pos_x, pos_y):
-    pygame.draw.circle(screen, WHITE, (pos_x, pos_y), circle_r, 0)
+# Tiles ################################################################################################################
 
-
-# Blocks ###############################################################################################################
-
-tiles_width = window_x // 9
-tiles_height = window_x // 19
-
-
-def tiles():
+def generate_tiles():
     lst = []
-    for y in range(0, window_y // 4, tiles_height):
-        for x in range(0, window_x - tiles_width, tiles_width):
-            lst.append([x, y, tiles_width, tiles_height])
+    for y in range(0, window_y // 3, tiles_h):
+        for x in range(0, window_x, tiles_w):
+            lst.append(pygame.draw.rect(window, (255, 255, 255), pygame.Rect(x, y, tiles_w, tiles_h)))
     return lst
 
 
-def draw_tiles():
-    for i in range(len(tiles())):
-        c = random.randint(50, 255)
-        pygame.draw.rect(screen, (c, c, c), pygame.Rect(tiles()[i]))
+def update_tiles(list_of_tiles, damaged_tiles):
+    for i in damaged_tiles:
+        for n in list_of_tiles:
+            if i[0] == n[0] and i[1] == n[1]:
+                list_of_tiles.remove(n)
+
+
+def draw_tiles(list_of_tiles):
+    global tiles_brightness_lower_limit
+    c = tiles_brightness_lower_limit
+    for tile in list_of_tiles:
+        c += ((255 - (c / 2)) / len(list_of_tiles))
+        pygame.draw.rect(window, (c, c, c), pygame.Rect(tile[0], tile[1], tile[2], tile[3]))
+
+
+def position_tiles(tiles):
+    positions = []
+    for element in tiles:
+        tile_position = (element[0], element[1])
+        positions.append(tile_position)
+    return positions
+
+
+def collision_tiles(tile_x, tile_y, x_ball, y_ball):
+    return tile_x <= x_ball <= (tile_x + tiles_w) and tile_y <= (y_ball - ball_r) <= (tile_y + tiles_h)
 
 
 # Game engine ##########################################################################################################
@@ -74,60 +72,107 @@ def draw_tiles():
 # FPS
 FPS = 60
 
+# TEXT
+my_font = pygame.font.SysFont('Comic Sans MS', 50)
+game_over_txt = my_font.render("GAME OVER! Press (r) for restart", True, (255, 255, 255))
+you_win_txt = my_font.render("YOU WIN!", True, (255, 255, 255))
+
 
 def main():
-    global avatar_x, avatar_y, circle_x, circle_y
-
+    global platform_x, ball_y, ball_x
     clock = pygame.time.Clock()
-    loop = True
+    quit_loop = True
 
-    flux_x = True
+    # Object speeds
+    ball_speed = 12
+    platform_speed = 15
+
+    # Initiating tile variables
+    tiles = generate_tiles()
+    tiles_pos = position_tiles(tiles)
+    removed_tiles = []
+
+    # Initiating dimensions
     flux_y = True
+    flux_x = True
 
-    while loop:
-        # FPS
+    while quit_loop:
         clock.tick(FPS)
-
-        # Quit
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                loop = False
+                quit_loop = False
 
-        # Rectangle movement
+        # Platform movement
         user_input = pygame.key.get_pressed()
-        if user_input[pygame.K_LEFT] and avatar_x - avatar_speed > 0:
-            avatar_x -= avatar_speed
-        if user_input[pygame.K_RIGHT] and avatar_x + avatar_speed + rect_x < window_x:  # elif
-            avatar_x += avatar_speed
+        if user_input[pygame.K_LEFT] and platform_x - platform_speed > 0:
+            platform_x -= platform_speed
+        if user_input[pygame.K_RIGHT] and platform_x + platform_speed + platform_w < window_x:
+            platform_x += platform_speed
 
-        # Ball boarders & movement
-        # x-movement
-        if circle_x - circle_r / 2 - avatar_speed > 0 and flux_x:
-            circle_x -= avatar_speed
+        # BALL COLLISION:
+
+        # Wall bounce x-axis & y-axis
+        if ball_x - ball_r < 0:
+            ball_x, flux_x = ball_x + ball_speed, True
+        elif ball_x + ball_r > window_x:
+            ball_x, flux_x = ball_x - ball_speed, False
         else:
-            flux_x = False
-            circle_x += avatar_speed
-            if circle_x + circle_r / 2 + avatar_speed > window_x:
-                flux_x = True
+            if flux_x:
+                ball_x += ball_speed
+            else:
+                ball_x -= ball_speed
+        if ball_y - ball_r < 0:
+            ball_y, flux_y = ball_y + ball_speed, False
 
-        # y-movement
-        if circle_y - circle_r / 2 - avatar_speed > 0 and flux_y:
-            circle_y -= avatar_speed
+        # COLLISION WITH PLATFORM
+        if platform_x <= ball_x <= platform_x + platform_w and platform_y <= ball_y + ball_r <= platform_y + platform_h:
+            ball_y, flux_y = ball_y - ball_speed, True
         else:
-            flux_y = False
-            circle_y += avatar_speed
-            if circle_y + circle_r / 2 + avatar_speed > window_y:
-                flux_y = True
+            if flux_y:
+                ball_y -= ball_speed
+            else:
+                ball_y += ball_speed
 
-        # Output
-        screen.fill(BLACK)
-        draw_rect(avatar_x, avatar_y, rect_x, rect_y)
-        draw_ball(circle_x, circle_y)
-        draw_tiles()
+        # COLLISION WITH BLOCKS
+        for tile in tiles_pos:
+            if collision_tiles(tile[0], tile[1], ball_x, ball_y):
+                flux_y = False
+                tiles_pos.remove(tile)
+                removed_tiles.append(tile)
+                update_tiles(tiles, removed_tiles)
+
+        # IF BALL LOST
+        game_over = False
+        if ball_y > window_y:
+            game_over = True
+            ball_speed = 0
+
+        # IF ALL BLOCKS GONE
+        win = False
+        if len(tiles) == 0:
+            win = True
+            ball_speed = 0
+
+        # new frame update
+        window.fill((0, 0, 0))
+        # screen.blit(bg, [0, 0])
+        draw_tiles(tiles)
+        pygame.draw.rect(window, (255, 255, 255), pygame.Rect(platform_x, platform_y, platform_w, platform_h))
+        draw_ball(ball_x, ball_y, ball_r)  # Ball
+
+        if game_over:
+            window.blit(game_over_txt, (window_x // 3.5, window_y // 2))
+            if user_input[pygame.K_r]:
+                return True
+
+        if win:
+            window.blit(you_win_txt, (window_x // 3.5, window_y // 2))
+
         pygame.display.update()
 
     pygame.quit()
 
 
 if __name__ == '__main__':
-    main()
+    while main():
+        main()
