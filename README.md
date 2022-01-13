@@ -1,2 +1,2 @@
 # block-breaker
-First Python Projects.
+First Python Project.
